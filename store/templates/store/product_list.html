@@ -9,39 +9,32 @@
       rel="stylesheet"
     />
     <script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD"></script>
-    <style>
-      .product-card {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
-      }
-      .product-card:hover {
-        transform: translateY(-5px);
-      }
-      .product-price {
-        color: #2c3e50;
-        font-size: 1.5em;
-        font-weight: bold;
-        margin: 15px 0;
-      }
-      .stock-info {
-        color: #7f8c8d;
-        font-size: 0.9em;
-      }
-      .navbar-brand {
-        font-size: 1.5em;
-        font-weight: bold;
-      }
-    </style>
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link href="{% static 'store/css/style.css' %}" rel="stylesheet" />
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </head>
   <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
       <div class="container">
         <a class="navbar-brand" href="/">Widget Store</a>
+        <div class="ms-auto d-flex align-items-center">
+          <div class="cart-icon position-relative me-3">
+            <i class="fas fa-shopping-cart text-white fs-4"></i>
+            <span
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            >
+              0
+            </span>
+          </div>
+          <span class="text-white">$0.00</span>
+        </div>
       </div>
     </nav>
 
@@ -49,46 +42,67 @@
     <div class="container">
       <div class="row">
         {% for product in products %}
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4 mb-4">
           <div class="product-card">
-            <h3>{{ product.name }}</h3>
-            <p class="text-muted">{{ product.description }}</p>
-            <div class="product-price">${{ product.price }}</div>
-            <p class="stock-info">In Stock: {{ product.stock }}</p>
-            <div id="paypal-button-{{ product.id }}"></div>
-            <script>
-              paypal
-                .Buttons({
-                  createOrder: function (data, actions) {
-                    return actions.order.create({
-                      purchase_units: [
-                        {
-                          amount: {
-                            value: "{{ product.price }}",
-                          },
-                        },
-                      ],
-                    });
-                  },
-                  onApprove: function (data, actions) {
-                    return actions.order.capture().then(function (details) {
-                      alert(
-                        "Thank you for your purchase, " +
-                          details.payer.name.given_name +
-                          "!"
-                      );
-                    });
-                  },
-                })
-                .render("#paypal-button-{{ product.id }}");
-            </script>
+            <div class="product-content">
+              <h3>{{ product.name }}</h3>
+              <p class="text-muted">{{ product.description }}</p>
+              <div class="product-price">${{ product.price }}</div>
+              <p class="stock-info">In Stock: {{ product.stock }}</p>
+              <button
+                class="btn btn-primary mb-2"
+                onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})"
+              >
+                <i class="fas fa-cart-plus"></i>Add to Cart
+              </button>
+            </div>
+            <div
+              id="paypal-button-{{ product.id }}"
+              data-price="{{ product.price }}"
+            ></div>
           </div>
         </div>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Bootstrap JS and Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add this after your main content div -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Shopping Cart</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="cart-items">
+              <!-- Cart items will be dynamically added here -->
+            </div>
+            <div class="text-end mt-3">
+              <strong>Total: $<span id="cart-total">0.00</span></strong>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="checkout-button">
+              Checkout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Before closing body tag -->
+    <script src="{% static 'store/js/cart.js' %}"></script>
   </body>
 </html>
